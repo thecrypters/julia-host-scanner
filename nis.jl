@@ -3,9 +3,6 @@ include("banner.jl")
 include("domainResolution.jl")
 include("portScanner.jl")
 include("smtpScan.jl")
-import Sockets
-import DataStructures
-import Printf
 
 using ArgParse
 
@@ -51,6 +48,8 @@ function scan()
     openPorts = scan_ports(ip, start, finish, only_open)
     print("\nSearching for SMTP servers\n")
     smtp_scan(ip, openPorts)
+    print("\nSearching HTTP(s) servers...\n")
+
     # TODO: Adicionar server header grabbing para identificar o server HTTP
     # TODO: Adicionar scan de diretorios com o dict em txt
     # TODO: Adicionar scan de links na página
