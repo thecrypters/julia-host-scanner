@@ -22,11 +22,11 @@ function parse_arguments()
         "--start", "-s"
         help = "Start port. Default 1."
         arg_type = Int
-        default = 1
+        default = START_PORT
         "--end", "-e"
         help = "End port. Default 1001."
         arg_type = Int
-        default = 1001
+        default = END_PORT
         "--open", "-o"
         help = "Show open ports only. Default false."
         action = :store_true
