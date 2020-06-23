@@ -2,6 +2,7 @@
 include("banner.jl")
 include("domainResolution.jl")
 include("portScanner.jl")
+include("smtpScan.jl")
 import Sockets
 import DataStructures
 import Printf
@@ -47,10 +48,10 @@ function scan()
     print_banner()
     print("\n")
     print("Running port scan on target $ip\n")
-    scan_ports(ip, start, finish, only_open)
-    # TODO: Colocar banner grabbing no port scanner
+    openPorts = scan_ports(ip, start, finish, only_open)
+    print("\nSearching for SMTP servers\n")
+    smtp_scan(ip, openPorts)
     # TODO: Adicionar server header grabbing para identificar o server HTTP
-    # TODO: Adicionar scan SMTP
     # TODO: Adicionar scan de diretorios com o dict em txt
     # TODO: Adicionar scan de links na página
 end
