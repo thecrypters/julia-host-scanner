@@ -80,7 +80,7 @@ function scan()
     if url !== nothing && run_links
         scan_links(url, depth)
     end
-    print("\n\nDone! See you next time!")
+    println("\n\nDone! See you next time!")
 end
 
 # Start scanning
