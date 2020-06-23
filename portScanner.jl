@@ -32,6 +32,7 @@ function get_banner(socket)
         if banner === ""
             banner = "None"
         end
+        banner = replace(banner, r"\n"  => s"")
         return banner
     catch e
         return "None"
