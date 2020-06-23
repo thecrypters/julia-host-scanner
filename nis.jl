@@ -3,6 +3,7 @@ include("banner.jl")
 include("domainResolution.jl")
 include("portScanner.jl")
 include("smtpScan.jl")
+include("httpScan.jl")
 
 using ArgParse
 
@@ -27,6 +28,9 @@ function parse_arguments()
         "--open", "-o"
         help = "Show open ports only. Default false."
         action = :store_true
+        "--smtp"
+        help = "Run SMTP server scan for users"
+        action = :store_true
     end
     return parse_args(s)
 end
@@ -42,15 +46,19 @@ function scan()
     start = coalesce(get(parsed_args, "start", missing), START_PORT)
     finish = coalesce(get(parsed_args, "end", missing), END_PORT)
     only_open = coalesce(get(parsed_args, "open", missing), false)
+    run_smtp = coalesce(get(parsed_args, "smtp", missing), false)
     print_banner()
     print("\n")
     print("Running port scan on target $ip\n")
     openPorts = scan_ports(ip, start, finish, only_open)
-    print("\nSearching for SMTP servers\n")
-    smtp_scan(ip, openPorts)
+    if run_smtp
+        print("\nSearching for SMTP servers\n")
+        smtp_scan(ip, openPorts)
+    end
     print("\nSearching HTTP(s) servers...\n")
-
-    # TODO: Adicionar server header grabbing para identificar o server HTTP
+    http_conn = http_scan(ip, openPorts)
+    server = get_server(http_conn)
+    print("\nHTTP Server: $server\n")
     # TODO: Adicionar scan de diretorios com o dict em txt
     # TODO: Adicionar scan de links na página
 end
