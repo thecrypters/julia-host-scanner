@@ -14,23 +14,21 @@ struct PortResult
     banner::Banner
 end
 
-function print_results(start::Int, finish::Int, output::Dict{Int64,PortResult}, only_open::Bool)
-    for i in start:finish
-        value = output[i]
-        if only_open && value.status != "OPEN"
-            continue
-        end
-        @printf("Port %5d - %s\n", i, value.status)
-    end
+struct Prefix
+    symbol::String
+    color
 end
+
+PREFIXES = Dict(
+    "OPEN" => Prefix("[+]", :green),
+    "CLOSED" => Prefix("[x]", :red),
+    "FILTERED" => Prefix("[-]", :yellow)
+)
 
 function get_banner(socket)
     try
-        first = String(read(socket, 1))
-        size = Int(socket.buffer.size)
-        rest = String(read(socket, size - 1))
-        banner = "$first$rest"
-        replace(banner, "\r\n" => "")
+        @async (sleep(0.5); close(socket))
+        banner = String(readuntil(socket, 0x0d))
         if banner === ""
             banner = "None"
         end
@@ -61,17 +59,17 @@ function connect_and_grab_banner(target, port)
 end
 
 function timeout()
-    sleep(1)
+    sleep(1.5)
     return PortResult("FILTERED", nothing)
 end
 
 function scan_ports(target::Host, start::Int, finish::Int, only_open::Bool)
-    ports = Dict{Int64,PortResult}()
+    openPorts = Dict{Int64,PortResult}()
     open_count = 0
     closed_count = 0
     filtered_count = 0
-    print("Running port scanning for $target\n\n")
     start_time = time()
+    @printf("PORT   STATUS          BANNER\n")
     for port = start:finish
         c = Channel(2)
         @async put!(c, connect_and_grab_banner(target, port))
@@ -79,6 +77,7 @@ function scan_ports(target::Host, start::Int, finish::Int, only_open::Bool)
         result = take!(c)
         if result.status == "OPEN"
             open_count += 1
+            push!(openPorts, port => result)
         end
         if result.status == "CLOSED"
             closed_count += 1
@@ -89,17 +88,18 @@ function scan_ports(target::Host, start::Int, finish::Int, only_open::Bool)
         if only_open && result.status != "OPEN"
             continue
         end
-        @printf("Port %5d - %s - BANNER: %s\n", port, result.status, result.banner)
+        prefix_buffer = IOBuffer();
+        prefix = PREFIXES[result.status]
+        printstyled(IOContext(prefix_buffer, :color => true), prefix.symbol, color=prefix.color)
+        @printf("%-5d  %s %-8s    %s\n", port, String(take!(prefix_buffer)), result.status, result.banner)
     end
     elapsed_time = time() - start_time
-    # if (open_count + closed_count + filtered_count) == 0
-    #     print("Looks like the host is down :(\n\n")
-    #     exit(0)
-    # end
-    print("TCP port scanning complete!\n")
+    if (open_count + closed_count + filtered_count) == 0
+        print("Looks like the host is down :(\n\n")
+        exit(0)
+    end
+    print("\nTCP port scanning complete!\n")
     print("$open_count open ports, $closed_count closed and $filtered_count filtered\n")
-    # print_results(start, finish, ports, only_open)
     println("\nFinished in $elapsed_time seconds")
+    return openPorts
 end
-
-connect_and_grab_banner("10.0.0.100", 25)
