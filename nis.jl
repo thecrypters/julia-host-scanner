@@ -10,7 +10,7 @@ import Printf
 using ArgParse
 
 START_PORT = 1
-END_PORT = 1001
+END_PORT = 1000
 
 function parse_arguments()
     s = ArgParseSettings()
