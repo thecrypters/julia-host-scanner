@@ -4,6 +4,7 @@ include("domainResolution.jl")
 include("portScanner.jl")
 include("smtpScan.jl")
 include("httpScan.jl")
+include("scanDirs.jl")
 
 using ArgParse
 
@@ -56,10 +57,12 @@ function scan()
         smtp_scan(ip, openPorts)
     end
     print("\nSearching HTTP(s) servers...\n")
-    http_conn = http_scan(ip, openPorts)
+    http_conn, url = http_scan(ip, openPorts)
     server = get_server(http_conn)
     print("\nHTTP Server: $server\n")
-    # TODO: Adicionar scan de diretorios com o dict em txt
+    if url !== nothing
+        scan_dirs(url)
+    end
     # TODO: Adicionar scan de links na página
 end
 
