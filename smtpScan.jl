@@ -45,7 +45,7 @@ function scan_smtp_target(target, port)
                 end
             catch e
                 if isa(e, Base.IOError)
-                        # Connection reset by peer, retry...
+                    # Connection reset by peer, retry...
                     if occursin("ECONNRESET", e.msg)
                         connection = connect_smtp(target, port)
                         if vrfy(connection, user)
