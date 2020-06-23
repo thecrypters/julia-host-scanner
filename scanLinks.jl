@@ -37,7 +37,7 @@ function grab_links(root_url, current_url, current_depth, max_depth)
         complete_link = get_complete_link(root_url, current_url, link)
         if complete_link !== nothing
             if (current_depth > 1)
-                pad = repeat(' ', current_depth * 2)
+                pad = repeat(" ", current_depth)
                 print("$pad └ ")
             end
             print("$link\n")
